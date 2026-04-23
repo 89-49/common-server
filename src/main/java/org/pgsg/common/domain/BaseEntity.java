@@ -43,6 +43,7 @@ public abstract class BaseEntity {
 	@Column(insertable = false)
 	protected UUID deletedBy;
 
+	@Column
 	protected LocalDateTime deletedAt;
 
 	protected void delete(UUID deletedBy) {
