@@ -2,7 +2,7 @@ package org.pgsg.config.feign;
 
 import java.util.List;
 
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -13,7 +13,7 @@ import feign.RequestInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
-@EnableFeignClients("org.pgsg")
+@ConditionalOnClass(name = "feign.Feign")
 public class FeignConfig {
 	private static final String HEADER_TRACE_ID = "X-Trace-Id";
 	private static final String HEADER_USER_ID = "X-User-Id";

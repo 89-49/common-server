@@ -1,5 +1,6 @@
 package org.pgsg.config.kafka;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,6 +9,7 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 
 @Configuration
+@ConditionalOnClass(name = "org.apache.kafka.clients.producer.KafkaProducer")
 public class KafkaConfig {
 	@Bean
 	public CommonErrorHandler errorHandler(KafkaTemplate<Object, Object> template) {
