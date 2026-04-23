@@ -66,7 +66,7 @@ public class AppCtx {
 		FilterRegistrationBean<MdcLoggingFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new MdcLoggingFilter());
 		registrationBean.addUrlPatterns("/*");
-		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 가장 먼저 적용되도록 우선순위를 가장 높에 지정(가장 작은 정수범위)
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 가장 먼저 적용되도록 우선순위를 가장 높게 지정(가장 작은 정수 범위)
 		return registrationBean;
 	}
 }
