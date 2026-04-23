@@ -16,6 +16,8 @@ public class MdcTaskDecorator implements TaskDecorator {
 				// 새로운 (자식) 쓰레드에 복사해둔 컨텍스트 주입
 				if (contextMap != null) {
 					MDC.setContextMap(contextMap);
+				}else{
+					MDC.clear();
 				}
 
 				runnable.run();

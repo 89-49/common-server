@@ -1,6 +1,7 @@
 package org.pgsg.common.domain;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.pgsg.common.util.SecurityUtil;
 import org.springframework.data.annotation.CreatedBy;
@@ -24,35 +25,31 @@ import lombok.Getter;
 public abstract class BaseEntity {
 
 	@CreatedBy
-	@Column(length=45, updatable = false)
-	protected String createdBy;
+	@Column(updatable = false)
+	protected UUID createdBy;
 
 	@CreatedDate
 	@Column(updatable = false)
 	protected LocalDateTime createdAt;
 
 	@LastModifiedBy
-	@Column(length=45, insertable = false)
-	protected String modifiedBy;
+	@Column(insertable = false)
+	protected UUID modifiedBy;
 
 	@LastModifiedDate
 	@Column(insertable = false)
 	protected LocalDateTime modifiedAt;
 
-	@Column(length=45, insertable = false)
-	protected String deletedBy;
+	@Column(insertable = false)
+	protected UUID deletedBy;
 
 	protected LocalDateTime deletedAt;
 
-	protected void delete(String deletedBy) {
+	protected void delete(UUID deletedBy) {
 		// 이미 삭제된 경우 중복 처리 방지
-		if (this.deletedAt != null) {
-			return;
-		}
-
-		this.deletedBy = StringUtils.hasText(deletedBy)
+		this.deletedBy = deletedBy!=null
 			? deletedBy
-			: SecurityUtil.getCurrentUsername().orElse("SYSTEM");	//todo: securityUtil 완성 후 검토
+			: SecurityUtil.getCurrentUserId().orElse(UUID.fromString("00000000-0000-0000-0000-00000000000"));
 
 		this.deletedAt = LocalDateTime.now();
 	}
