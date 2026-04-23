@@ -1,22 +1,21 @@
 package org.pgsg.common.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtil {
-	private static ObjectMapper objectMapper;
-
-
-	@Autowired	//todo: 서비스 구현 시 Autowired 작동 여부 확인
-	public void init(ObjectMapper objectMapper) {
-		JsonUtil.objectMapper = objectMapper;
-	}
+	private static final ObjectMapper objectMapper = new ObjectMapper()
+		.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+		.registerModule(new JavaTimeModule());
 
 	public static String toJson(Object obj) {
 		try {

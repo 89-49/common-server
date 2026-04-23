@@ -1,7 +1,7 @@
 package org.pgsg.config.feign;
 
-import feign.RequestInterceptor;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.List;
+import feign.RequestInterceptor;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableFeignClients("org.pgsg")

@@ -1,7 +1,6 @@
 package org.pgsg.config;
 
 import org.pgsg.config.feign.FeignConfig;
-import org.pgsg.config.json.JsonConfig;
 import org.pgsg.config.kafka.KafkaConfig;
 import org.pgsg.config.persistence.JPAConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Import({
 	FeignConfig.class,
 	JPAConfig.class,
-	JsonConfig.class,
 	KafkaConfig.class
 })
 public class AppCtx {
