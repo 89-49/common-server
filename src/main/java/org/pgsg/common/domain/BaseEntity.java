@@ -9,7 +9,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.util.StringUtils;
 
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
@@ -43,6 +42,7 @@ public abstract class BaseEntity {
 	@Column(insertable = false)
 	protected UUID deletedBy;
 
+	@Column
 	protected LocalDateTime deletedAt;
 
 	protected void delete(UUID deletedBy) {

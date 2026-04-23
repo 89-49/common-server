@@ -1,14 +1,15 @@
 package org.pgsg.common.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.pgsg.common.exception.UnAuthorizedException;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Optional;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SecurityUtil {

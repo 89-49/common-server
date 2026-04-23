@@ -1,9 +1,9 @@
 package org.pgsg.common.util;
 
+import java.util.Map;
+
 import org.slf4j.MDC;
 import org.springframework.core.task.TaskDecorator;
-
-import java.util.Map;
 
 public class MdcTaskDecorator implements TaskDecorator {
 	@Override
