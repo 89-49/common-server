@@ -1,0 +1,36 @@
+error:
+  configs:
+    MethodArgumentNotValidException:
+      code: "C001"
+      message: "입력값이 유효하지 않습니다."
+      status: 400
+
+    UnauthorizedException:
+      code: "C002"
+      message: "인증되지 않은 사용자입니다."
+      status: 401
+
+    AccessDeniedException:
+      code: "C003"
+      message: "해당 리소스에 대한 접근 권한이 없습니다."
+      status: 403
+
+    EntityNotFoundException:
+      code: "C004"
+      message: "해당 정보를 찾을 수 없습니다."
+      status: 404
+
+    HttpRequestMethodNotSupportedException:
+      code: "C005"
+      message: "지원하지 않는 HTTP 메서드 요청입니다."
+      status: 404
+
+    RuntimeException:
+      code: "C006"
+      message: "런타임 에러가 발생했습니다."
+      status: 500
+
+    GatewayTimeoutException:
+      code: "C007"
+      message: "응답 시간이 초과되었습니다."
+      status: 504

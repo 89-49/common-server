@@ -1,7 +1,5 @@
 package org.pgsg.common.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
