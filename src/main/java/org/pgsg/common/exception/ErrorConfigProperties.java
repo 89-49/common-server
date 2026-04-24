@@ -1,5 +1,6 @@
 package org.pgsg.common.exception;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @Component
 @ConfigurationProperties(prefix = "error")
 public class ErrorConfigProperties {
-	private Map<String ,ErrorDetail> configs;
+	private Map<String ,ErrorDetail> configs=new HashMap<>();
 
 	@Getter @Setter
 	public static class ErrorDetail {

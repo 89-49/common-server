@@ -5,6 +5,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.pgsg.common.exception.ErrorConfigProperties;
+import org.pgsg.common.exception.ErrorConfigProperties.ErrorDetail;
 import org.slf4j.MDC;
 import org.pgsg.common.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -22,10 +25,17 @@ import java.io.IOException;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
+    private final ErrorConfigProperties errorConfigProperties;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
+
+        ErrorDetail detail = errorConfigProperties.getConfigs().get("InsufficientAuthenticationException");
+
+        int status = (detail != null) ? detail.getStatus() : 401;
+        String code = (detail != null) ? detail.getCode() : "C002";
+        String message = (detail != null) ? detail.getMessage() : "인증에 실패했습니다. 유효한 인증 정보를 제공해주세요.";
 
         // traceId가 없을 경우를 대비해 안전하게 로그 기록
         String traceId = MDC.get("traceId");
@@ -39,10 +49,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        // 공통 에러 응답 포맷 생성 (가급적 ErrorCode 같은 Enum 사용 권장)
         ErrorResponse errorResponse = ErrorResponse.of(
-                HttpStatus.UNAUTHORIZED,
-                "인증에 실패했습니다. 유효한 인증 정보를 제공해주세요."
+            HttpStatus.valueOf(status),
+            code,
+            null,
+            message
         );
 
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
