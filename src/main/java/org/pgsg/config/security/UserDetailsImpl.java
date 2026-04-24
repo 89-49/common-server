@@ -1,17 +1,18 @@
 package org.pgsg.config.security;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @ToString(exclude = "password")
