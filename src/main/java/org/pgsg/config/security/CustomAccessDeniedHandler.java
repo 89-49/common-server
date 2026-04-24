@@ -50,13 +50,12 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         ErrorResponse errorResponse = ErrorResponse.of(
             HttpStatus.valueOf(status),
             code,
-            null,
             message
         );
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setStatus(status);
 
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
