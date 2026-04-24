@@ -1,10 +1,10 @@
 package org.pgsg.common.response;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-
-import java.time.LocalDateTime;
 
 public record ErrorResponse(
 	int status, // HTTP 상태 코드
