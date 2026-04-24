@@ -1,15 +1,26 @@
 package org.pgsg.config;
 
+import org.pgsg.common.exception.ErrorConfigProperties;
+import org.pgsg.common.exception.GlobalExceptionAdvice;
+import org.pgsg.common.exception.GlobalExceptionAdviceImpl;
+import org.pgsg.common.filter.MdcLoggingFilter;
+import org.pgsg.common.response.CommonResponseAdvice;
 import org.pgsg.config.feign.FeignConfig;
 import org.pgsg.config.json.JsonConfig;
 import org.pgsg.config.kafka.KafkaConfig;
 import org.pgsg.config.persistence.JPAConfig;
+import org.pgsg.config.security.CustomAccessDeniedHandler;
+import org.pgsg.config.security.CustomAuthenticationEntryPoint;
+import org.pgsg.config.security.LoginFilter;
+import org.pgsg.config.security.SecurityConfig;
+import org.pgsg.config.security.SecurityConfigImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -21,23 +32,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	FeignConfig.class,
 	JPAConfig.class,
 	JsonConfig.class,
-	KafkaConfig.class
+	KafkaConfig.class,
+	ErrorConfigProperties.class
 })
 public class AppCtx {
 
 	@Bean
-	public LoginFilter loginFilter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+	public LoginFilter loginFilter(@Lazy @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
 		return new LoginFilter(resolver);
 	}
 
 	@Bean
-	public CustomAuthenticationEntryPoint customAuthenticationEntryPoint(ObjectMapper  objectMapper) {
-		return new CustomAuthenticationEntryPoint(objectMapper);
+	public CustomAuthenticationEntryPoint customAuthenticationEntryPoint(ObjectMapper  objectMapper, ErrorConfigProperties errorConfigProperties) {
+		return new CustomAuthenticationEntryPoint(objectMapper, errorConfigProperties);
 	}
 
 	@Bean
-	public CustomAccessDeniedHandler accessDeniedHandler(ObjectMapper  objectMapper) {
-		return new CustomAccessDeniedHandler(objectMapper);
+	public CustomAccessDeniedHandler accessDeniedHandler(ObjectMapper  objectMapper, ErrorConfigProperties errorConfigProperties) {
+		return new CustomAccessDeniedHandler(objectMapper,  errorConfigProperties);
 	}
 
 
@@ -51,8 +63,8 @@ public class AppCtx {
 	// 전역 에러 출력 처리, GlobalExceptionAdvice로 등록된 빈이 없을때 기본 설정으로 등록됨
 	@Bean
 	@ConditionalOnMissingBean(GlobalExceptionAdvice.class)
-	public GlobalExceptionAdvice globalExceptionAdvice() {
-		return new GlobalExceptionAdviceImpl();
+	public GlobalExceptionAdvice globalExceptionAdvice(ErrorConfigProperties errorConfigProperties) {
+		return new GlobalExceptionAdviceImpl(errorConfigProperties);
 	}
 
 	@Bean
@@ -66,7 +78,7 @@ public class AppCtx {
 		FilterRegistrationBean<MdcLoggingFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new MdcLoggingFilter());
 		registrationBean.addUrlPatterns("/*");
-		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 가장 먼저 적용되도록 우선순위를 가장 높게 지정(가장 작은 정수 범위)
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE); // 가장 먼저 적용되도록 우선순위를 가장 높에 지정(가장 작은 정수범위)
 		return registrationBean;
 	}
 }
