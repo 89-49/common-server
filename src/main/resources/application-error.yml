@@ -23,7 +23,7 @@ error:
     HttpRequestMethodNotSupportedException:
       code: "C005"
       message: "지원하지 않는 HTTP 메서드 요청입니다."
-      status: 404
+      status: 405
 
     RuntimeException:
       code: "C006"

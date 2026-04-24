@@ -3,6 +3,7 @@ package org.pgsg.config;
 import org.pgsg.common.exception.ErrorConfigProperties;
 import org.pgsg.common.exception.GlobalExceptionAdvice;
 import org.pgsg.common.exception.GlobalExceptionAdviceImpl;
+import org.pgsg.common.filter.MdcLoggingFilter;
 import org.pgsg.common.response.CommonResponseAdvice;
 import org.pgsg.config.feign.FeignConfig;
 import org.pgsg.config.json.JsonConfig;
@@ -42,13 +43,13 @@ public class AppCtx {
 	}
 
 	@Bean
-	public CustomAuthenticationEntryPoint customAuthenticationEntryPoint(ObjectMapper  objectMapper) {
-		return new CustomAuthenticationEntryPoint(objectMapper);
+	public CustomAuthenticationEntryPoint customAuthenticationEntryPoint(ObjectMapper  objectMapper, ErrorConfigProperties errorConfigProperties) {
+		return new CustomAuthenticationEntryPoint(objectMapper, errorConfigProperties);
 	}
 
 	@Bean
-	public CustomAccessDeniedHandler accessDeniedHandler(ObjectMapper  objectMapper) {
-		return new CustomAccessDeniedHandler(objectMapper);
+	public CustomAccessDeniedHandler accessDeniedHandler(ObjectMapper  objectMapper, ErrorConfigProperties errorConfigProperties) {
+		return new CustomAccessDeniedHandler(objectMapper,  errorConfigProperties);
 	}
 
 
