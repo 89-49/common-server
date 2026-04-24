@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
@@ -47,12 +46,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         // 응답 설정
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(status);
 
         ErrorResponse errorResponse = ErrorResponse.of(
             HttpStatus.valueOf(status),
             code,
-            null,
             message
         );
 
