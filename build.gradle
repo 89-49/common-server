@@ -48,8 +48,9 @@ dependencies {
 
     api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
 
-//    api "com.github.danielwegener:logback-kafka-appender:0.2.0-RC2"
-//    api 'net.logstash.logback:logstash-logback-encoder:7.4'
+    api "com.github.danielwegener:logback-kafka-appender:0.2.0-RC2"
+    api 'net.logstash.logback:logstash-logback-encoder:7.4'
+    api 'com.github.loki4j:loki-logback-appender:1.4.1'
 
 //    // Zipkin
 //    api 'io.micrometer:micrometer-tracing-bridge-brave'
