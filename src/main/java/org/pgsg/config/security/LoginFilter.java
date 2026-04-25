@@ -29,7 +29,7 @@ public class LoginFilter extends OncePerRequestFilter {
     private static final String HEADER_USERNAME = "X-User-Username"; // 로그인 ID로 사용
     private static final String HEADER_ROLES = "X-User-Roles";    // 권한
     private static final String HEADER_USER_NAME = "X-User-Name";  // 실명
-    private static final String HEADER_USER_NICKNAME = "X-User-Nickname";  // 실명
+    private static final String HEADER_USER_NICKNAME = "X-User-Nickname";  // 닉네임
     private static final String HEADER_ENABLED = "X-User-Enabled";
 
     private final HandlerExceptionResolver resolver;
@@ -70,7 +70,8 @@ public class LoginFilter extends OncePerRequestFilter {
         try {
             UUID uuid = UUID.fromString(userIdHeader);
             String username = usernameHeader.trim();
-            String name = decodeHeader(request.getHeader(HEADER_USER_NAME));
+            String name = decodeHeader(request.getHeader(HEADER_USER_NAME));    // UTF-8 디코딩
+            String nickname = decodeHeader(request.getHeader(HEADER_USER_NICKNAME));
             String roles = request.getHeader(HEADER_ROLES);
             String enabledStr = request.getHeader(HEADER_ENABLED);
 
@@ -80,6 +81,7 @@ public class LoginFilter extends OncePerRequestFilter {
                 .password("")
                 .userRole(roles)
                 .name(name)
+                .nickname(nickname)
                 .enabled("true".equalsIgnoreCase(enabledStr))
                 .build();
 

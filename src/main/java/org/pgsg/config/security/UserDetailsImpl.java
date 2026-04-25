@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString(exclude = "password")
+@ToString(exclude = {"password", "nickname"})
 public class UserDetailsImpl implements UserDetails {
 
     private final UUID uuid;          // 회원 고유 ID
