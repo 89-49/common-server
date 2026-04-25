@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'   //api()를 사용하기 위한 플러그인
+    id 'maven-publish' // 빌드된 아티팩트를 Maven 저장소에 배포하기 위한 플러그인
     id 'org.springframework.boot' version '3.5.13'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -64,6 +65,32 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+publishing {
+    publications {
+        gpr(MavenPublication) {
+            from components.java
+            artifactId = 'common'
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages" // 저장소 별칭
+            url = uri("https://maven.pkg.github.com/89-49/common") // GitHub Packages 저장소 주소
+            credentials {
+                username = findProperty('gpr.user') ?: System.getenv('GPR_USER')
+                password = findProperty('gpr.token') ?: System.getenv('GPR_TOKEN')
+            }
+        }
+    }
 }
 
 dependencyManagement {
@@ -85,4 +112,8 @@ tasks.withType(JavaCompile).configureEach {
 
 clean {
     delete querydslDir
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }
