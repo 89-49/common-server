@@ -27,7 +27,7 @@ public class SecurityUtil {
 
 	public static UUID getCurrentUserIdOrThrow() {
 		// UnauthorizedException 클래스가 없어 컴파일 에러 발생 -> CustomException으로 대체
-		return getCurrentUserId().orElseThrow(() -> new CustomException("UnAuthorizedException"));
+		return getCurrentUserId().orElseThrow(() -> new CustomException("UnauthorizedException"));
 	}
 
 	public static Optional<String> getCurrentUsername() {
