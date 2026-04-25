@@ -23,14 +23,17 @@ public class UserDetailsImpl implements UserDetails {
     private final String password;    // 비밀번호
     private final String userRole;    // 권한 (예: ROLE_USER, ROLE_MASTER 등)
     private final String name;        // 회원의 실명
+    private final String nickname;    // 회원의 닉네임(예약, 거래, 채팅 도메인에서 필요할 시)
     private final boolean enabled;
 
     @Builder
-    public UserDetailsImpl(UUID uuid, String username, String password, String userRole, String name, boolean enabled) {
+    public UserDetailsImpl(UUID uuid, String username, String password, String userRole,
+                           String name, String nickname, boolean enabled) {
         this.uuid = uuid;
         this.username = username;
         this.password = password;
         this.userRole = userRole;
+        this.nickname = nickname;
         this.name = name;
         this.enabled = enabled;
     }
