@@ -21,6 +21,7 @@ public class FeignConfig {
 	private static final String HEADER_USERNAME = "X-User-Username"; // 로그인 ID로 사용
 	private static final String HEADER_ROLES = "X-User-Roles";
 	private static final String HEADER_NAME = "X-User-Name";
+	private static final String HEADER_NICKNAME = "X-User-Nickname";
 	private static final String HEADER_ENABLED = "X-User-Enabled";	//todo: 활성화 여부의 필요성 검토
 
 	@Bean
@@ -38,7 +39,7 @@ public class FeignConfig {
 			// Gateway로부터 넘어온 사용자 정보 헤더들 전파
 			List<String> userHeaders = List.of(
 				HEADER_TRACE_ID, HEADER_USER_ID, HEADER_USERNAME,
-					HEADER_NAME, HEADER_ROLES, HEADER_ENABLED
+					HEADER_NAME, HEADER_NICKNAME, HEADER_ROLES, HEADER_ENABLED
 			);
 
 			for (String headerName : userHeaders) {

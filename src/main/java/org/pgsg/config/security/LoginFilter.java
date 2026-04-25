@@ -29,6 +29,7 @@ public class LoginFilter extends OncePerRequestFilter {
     private static final String HEADER_USERNAME = "X-User-Username"; // 로그인 ID로 사용
     private static final String HEADER_ROLES = "X-User-Roles";    // 권한
     private static final String HEADER_USER_NAME = "X-User-Name";  // 실명
+    private static final String HEADER_USER_NICKNAME = "X-User-Nickname";  // 실명
     private static final String HEADER_ENABLED = "X-User-Enabled";
 
     private final HandlerExceptionResolver resolver;
