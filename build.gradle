@@ -27,7 +27,7 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "2025.1.1")
+    set('springCloudVersion', "2025.0.1")
 }
 
 dependencies {
@@ -47,7 +47,8 @@ dependencies {
     api 'io.github.resilience4j:resilience4j-circuitbreaker'
     api 'io.github.resilience4j:resilience4j-retry'
 
-    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
+    // Spring Boot 3.5.13 버전에 호환
+    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8'
 
     api "com.github.danielwegener:logback-kafka-appender:0.2.0-RC2"
     api 'net.logstash.logback:logstash-logback-encoder:7.4'
@@ -72,6 +73,15 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+configurations.configureEach {
+    // spring boot 3.5.13에 호환되는 버전을 사용하도록 설정(현재는 4.0대 버전에 맞는 버전을 주입하게 됨)
+    resolutionStrategy {
+        force "io.github.resilience4j:resilience4j-spring-boot3:2.2.0"
+        force "io.github.resilience4j:resilience4j-circuitbreaker:2.2.0"
+        force "io.github.resilience4j:resilience4j-retry:2.2.0"
+    }
 }
 
 publishing {
