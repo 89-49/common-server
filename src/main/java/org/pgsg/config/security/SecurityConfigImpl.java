@@ -1,7 +1,5 @@
 package org.pgsg.config.security;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.pgsg.common.util.SecurityUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +12,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Configuration
@@ -51,8 +55,12 @@ public class SecurityConfigImpl implements SecurityConfig {
     }
 
     @Bean
-    public AuditorAware<String> auditorProvider() {
-        return SecurityUtil::getCurrentUsername;
+    public AuditorAware<UUID> auditorProvider() {
+        // 시스템 기본값으로 사용할 UUID (예: 관리자나 시스템 계정 ID)
+        UUID DEFAULT_SYSTEM_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+        return () -> SecurityUtil.getCurrentUserId()
+                .or(() -> Optional.of(DEFAULT_SYSTEM_ID)); // null(empty)이면 기본값 포함된 Optional 반환
     }
 
     @Bean
