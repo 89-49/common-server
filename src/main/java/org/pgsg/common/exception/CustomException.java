@@ -5,16 +5,15 @@ import lombok.Getter;
 @Getter
 public class CustomException extends RuntimeException {
 
-	private final String errorName;	//YAML 파일의 key(예외명)
+	private final ErrorCode errorCode;
 	private final String field;	//예외가 발생한 필드
 
-	public CustomException(String errorName){
-		this(errorName, null);
+	public CustomException(ErrorCode errorCode) {
+		this(errorCode, null);
 	}
 
-	public CustomException(String errorName, String field) {
-		super(errorName);
-		this.errorName = errorName;
+	public CustomException(ErrorCode errorCode, String field) {
+        this.errorCode = errorCode;
 		this.field = field;
 	}
 }
