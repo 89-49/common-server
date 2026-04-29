@@ -5,6 +5,7 @@ import org.pgsg.common.response.ErrorResponse;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -20,29 +21,45 @@ public class GlobalExceptionAdviceImpl implements GlobalExceptionAdvice {
 
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
-		// YAML에서 공통 정보 가져옴
-		ErrorDetail detail=errorConfigProperties.getConfigs().get(e.getErrorName());
-		
-		//yaml에서 정의하지 않은 에러 발생
+		String errorKey = e.getErrorCode().getErrorKey();
+		ErrorDetail detail = errorConfigProperties.getConfigs().get(errorKey);
+
 		if (detail == null) {
-			log.error("[TraceID: {}] 정의되지 않은 에러: {}", MDC.get("traceId"), e.getErrorName());
+			log.error("[TraceID: {}] Undefined Error Key: field={}, errorKey={}",
+					MDC.get("traceId"), e.getField(), errorKey, e);
+
 			return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
-				.body(ErrorResponse.of(
-					HttpStatus.valueOf(500),                    	// errorCode (상태코드와 동일하게 혹은 "SYSTEM_ERROR")
-					e.getField(),           								// 어떤 필드에서 터졌는지 (예외에 담긴 값)
-					"서버 내부 오류가 발생했습니다." // 상세 메시지
-				));
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, e.getField(), "정의되지 않은 서버 에러가 발생했습니다."));
 		}
 
-		int httpStatus=detail.getStatus();
-		
-		// MDC에서 traceId를 가져와 로그에 명시적으로 출력
-		log.error("[TraceID: {}] Custom Exception: {}", MDC.get("traceId"), e.getMessage(), e);
+		log.error("[TraceID: {}] CustomException: field={}, errorKey={}, message={}",
+				MDC.get("traceId"), e.getField(), errorKey, detail.getMessage(), e);
+
+		HttpStatus status = HttpStatus.valueOf(detail.getStatus());
 
 		return ResponseEntity
-			.status(httpStatus)
-			.body(ErrorResponse.of(HttpStatus.valueOf(httpStatus), e.getField(), detail.getMessage()));
+				.status(status)
+				.body(ErrorResponse.of(status, e.getField(), detail.getMessage()));
 	}
 
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+		log.error("[TraceID: {}] MethodArgumentNotValidException: {}",
+				MDC.get("traceId"), e.getMessage(), e);
+
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(ErrorResponse.of(HttpStatus.BAD_REQUEST, null, "잘못된 입력값입니다."));
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleException(Exception e) {
+		log.error("[TraceID: {}] Exception: {}",
+				MDC.get("traceId"), e.getMessage(), e);
+
+		return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, null, "서버 내부 오류가 발생했습니다."));
+	}
 }
