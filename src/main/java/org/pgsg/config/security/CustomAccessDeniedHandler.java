@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.pgsg.common.exception.ErrorConfigProperties;
 import org.pgsg.common.exception.ErrorConfigProperties.ErrorDetail;
+import org.pgsg.common.exception.GlobalErrorCode;
 import org.pgsg.common.response.ErrorResponse;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -31,24 +32,24 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                        AccessDeniedException accessDeniedException) throws IOException {
 
         String traceId = MDC.get("traceId");
-
-        ErrorDetail detail = errorConfigProperties.getConfigs().get("AccessDeniedException");
+        String errorKey = GlobalErrorCode.ACCESS_DENIED.getErrorKey();
+        ErrorDetail detail = errorConfigProperties.getConfigs().get(errorKey);
 
         int status = (detail != null) ? detail.getStatus() : 403;
         String code = (detail != null) ? detail.getCode() : "C003";
         String message = (detail != null) ? detail.getMessage() : "접근 권한이 없습니다.";
 
-        // traceId가 없을 경우를 대비해 안전하게 로그 기록
-        log.warn("[TraceID: {}] Access Denied: Method: {}, URI: {}, Message: {}",
+        log.warn("[TraceID: {}] Access Denied: Method: {}, URI: {}, ErrorKey: {}, Message: {}",
                 traceId != null ? traceId : "N/A",
                 request.getMethod(),
                 request.getRequestURI(),
+                errorKey,
                 accessDeniedException.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.of(
-            HttpStatus.valueOf(status),
-            code,
-            message
+                HttpStatus.valueOf(status),
+                code,
+                message
         );
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

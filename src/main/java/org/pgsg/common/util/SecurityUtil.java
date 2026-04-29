@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.pgsg.common.exception.CustomException;
+import org.pgsg.common.exception.GlobalErrorCode;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,8 +27,7 @@ public class SecurityUtil {
 	}
 
 	public static UUID getCurrentUserIdOrThrow() {
-		// UnauthorizedException 클래스가 없어 컴파일 에러 발생 -> CustomException으로 대체
-		return getCurrentUserId().orElseThrow(() -> new CustomException("UnauthorizedException"));
+		return getCurrentUserId().orElseThrow(() -> new CustomException(GlobalErrorCode.UNAUTHORIZED));
 	}
 
 	public static Optional<String> getCurrentUsername() {
