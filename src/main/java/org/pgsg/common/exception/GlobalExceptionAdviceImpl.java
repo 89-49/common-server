@@ -40,26 +40,27 @@ public class GlobalExceptionAdviceImpl implements GlobalExceptionAdvice {
 
 		return ResponseEntity
 				.status(status)
-				.body(ErrorResponse.of(status, e.getField(), detail.getMessage()));
+				.body(ErrorResponse.of(status, detail.getCode(), detail.getMessage()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
 		log.error("[TraceID: {}] MethodArgumentNotValidException: {}",
 				MDC.get("traceId"), e.getMessage(), e);
+		
+		ErrorDetail detail = errorConfigProperties.getConfigs().get(GlobalErrorCode.INVALID_INPUT_VALUE.getErrorKey());
 
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
-				.body(ErrorResponse.of(HttpStatus.BAD_REQUEST, null, "잘못된 입력값입니다."));
+				.body(ErrorResponse.of(HttpStatus.BAD_REQUEST, detail.getCode(), detail.getMessage()));
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleException(Exception e) {
-		log.error("[TraceID: {}] Exception: {}",
-				MDC.get("traceId"), e.getMessage(), e);
+		ErrorDetail detail = errorConfigProperties.getConfigs().get(GlobalErrorCode.INTERNAL_SERVER_ERROR.getErrorKey());
 
 		return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, null, "서버 내부 오류가 발생했습니다."));
+				.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, detail.getCode(), detail.getMessage()));
 	}
 }
