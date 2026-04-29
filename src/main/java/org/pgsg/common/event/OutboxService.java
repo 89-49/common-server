@@ -2,8 +2,8 @@ package org.pgsg.common.event;
 
 import java.util.UUID;
 
-import org.pgsg.common.domain.Outbox;
 import org.pgsg.common.domain.OutboxRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OutboxService {
 	private final OutboxRepository outboxRepository;
+	private final KafkaTemplate<String, Object> kafkaTemplate;
 
 	private static final int MAX_RETRY_COUNT = 3; // 재시도 최대 횟수
 

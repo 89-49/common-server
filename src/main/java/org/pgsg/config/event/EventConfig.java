@@ -6,6 +6,7 @@ import org.pgsg.common.domain.InboxRepository;
 import org.pgsg.common.domain.OutboxRepository;
 import org.pgsg.common.event.Events;
 import org.pgsg.common.event.OutboxEventListener;
+import org.pgsg.common.event.OutboxService;
 import org.pgsg.common.event.scheduler.OutboxRelayScheduler;
 import org.pgsg.common.messaging.advice.InboxAdvice;
 import org.pgsg.common.messaging.scheduler.InboxCleanupScheduler;
@@ -54,13 +55,13 @@ public class EventConfig implements AsyncConfigurer {
 	}
 
 	@Bean
-	public OutboxEventListener outboxEventListener(OutboxRepository outboxRepository, KafkaTemplate<String, Object> kafkaTemplate, ObjectMapper objectMapper) {
-		return new OutboxEventListener(outboxRepository, kafkaTemplate, objectMapper);
+	public OutboxEventListener outboxEventListener(OutboxRepository outboxRepository, KafkaTemplate<String, Object> kafkaTemplate, ObjectMapper objectMapper, OutboxService outboxService) {
+		return new OutboxEventListener(outboxRepository, kafkaTemplate, objectMapper, outboxService);
 	}
 
 	@Bean
-	public OutboxRelayScheduler OutboxRelayScheduler(OutboxRepository outboxRepository, KafkaTemplate<String, Object> kafkaTemplate) {
-		return new OutboxRelayScheduler(outboxRepository, kafkaTemplate);
+	public OutboxRelayScheduler OutboxRelayScheduler(OutboxRepository outboxRepository, KafkaTemplate<String, Object> kafkaTemplate, OutboxService outboxService) {
+		return new OutboxRelayScheduler(outboxRepository, kafkaTemplate, outboxService);
 	}
 
 	@Bean
