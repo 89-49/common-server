@@ -1,5 +1,7 @@
 package org.pgsg.common.event;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,7 +17,7 @@ public class Events {
 		Events.eventPublisher = eventPublisher;
 	}
 
-	public static void trigger(String correlationId, String domainType, String domainId, String eventType, Object payload) {
+	public static void trigger(UUID correlationId, String domainType, String domainId, String eventType, Object payload) {
 		if (kafkaTemplate != null && eventPublisher != null) {
 			eventPublisher.publishEvent(new OutboxEvent(correlationId, domainType, domainId, eventType, payload));
 		}

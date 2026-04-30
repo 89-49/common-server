@@ -23,7 +23,7 @@ public class Outbox extends BaseEntity{
 	protected UUID id;
 
 	@Column(nullable = false, unique = true)
-	protected String correlationId; // 거래나 예약 등에 관여한 서비스 이벤트들을 하나로 연결
+	protected UUID correlationId; // 거래나 예약 등에 관여한 서비스 이벤트들을 하나로 연결
 
 	@Column(nullable = false)
 	protected String domainType;
@@ -50,10 +50,13 @@ public class Outbox extends BaseEntity{
 	}
 
 	public void fail() {
-		if(retryCount++>3)	//재시도 횟수 3회로 설정
+		if(retryCount>3)	//재시도 횟수 3회로 설정
 			this.status = OutboxStatus.FAILED;
 		else
 			this.retryCount++;
+	}
+	public void permanent_fail() {
+		this.status = OutboxStatus.PERMANENT_FAILURE;
 	}
 
 }

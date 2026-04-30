@@ -86,8 +86,15 @@ public class InboxAdvice {
 			// Spring Messaging Message 객체인 경우
 			if (arg instanceof Message<?> message) {
 				Object header = message.getHeaders().get("message_id");
-				if (header instanceof byte[] bytes) return parseUuid(bytes);
-				if (header instanceof String str) return UUID.fromString(str);
+				if (header instanceof byte[] bytes)
+					return parseUuid(bytes);
+				else if (header instanceof String str){
+					try {
+						return UUID.fromString(str);
+					}catch (IllegalArgumentException e) {
+						log.warn("Invalid message_id format in String header: {}", str);
+					}
+				}
 			}
 		}
 		return null;
