@@ -5,6 +5,7 @@ import org.pgsg.common.exception.GlobalExceptionAdvice;
 import org.pgsg.common.exception.GlobalExceptionAdviceImpl;
 import org.pgsg.common.filter.MdcLoggingFilter;
 import org.pgsg.common.response.CommonResponseAdvice;
+import org.pgsg.config.event.SchedulerLockConfig;
 import org.pgsg.config.feign.FeignConfig;
 import org.pgsg.config.json.JsonConfig;
 import org.pgsg.config.kafka.KafkaConfig;
@@ -33,7 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	JPAConfig.class,
 	JsonConfig.class,
 	KafkaConfig.class,
-	ErrorConfigProperties.class
+	ErrorConfigProperties.class,
+	SchedulerLockConfig.class
 })
 public class AppCtx {
 
