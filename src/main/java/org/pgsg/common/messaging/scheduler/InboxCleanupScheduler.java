@@ -2,33 +2,49 @@ package org.pgsg.common.messaging.scheduler;
 
 import java.time.LocalDateTime;
 
-import org.pgsg.common.domain.InboxStatus;
-import org.pgsg.common.domain.QInbox;
+import org.pgsg.common.messaging.processor.InboxCleanupProcessor;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class InboxCleanupScheduler {
-	private final JPAQueryFactory queryFactory;
 
-	@Transactional
-	@Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시에 정리 작업 진행
+	private final InboxCleanupProcessor inboxCleanupProcessor;
+
+	private static final int CHUNK_SIZE = 1000;
+	private static final int RETENTION_DAYS = 7;
+
+	@Scheduled(cron = "0 0 3 * * *")
+	@SchedulerLock(name = "inbox-cleanup-lock", lockAtMostFor = "PT1H", lockAtLeastFor = "PT5M")
 	public void cleanupOldMessage() {
-		// 7일 이전 목록 삭제
-		long count = queryFactory
-			.delete(QInbox.inbox)
-			.where(
-				QInbox.inbox.status.eq(InboxStatus.PROCESSED),
-				QInbox.inbox.processedAt.before(LocalDateTime.now().minusWeeks(1L)
-				))
-			.execute();
+		LocalDateTime threshold = LocalDateTime.now().minusDays(RETENTION_DAYS);
+		int totalDeleted = 0;
 
-		log.info("처리 완료된 7일 경과 Inbox 내역 삭제: {}건 삭제됨", count);
+		log.info("Inbox 정리 스케줄러 실행: {} 이전 데이터 삭제 시작", threshold);
+
+		while (true) {
+			int deletedCount = inboxCleanupProcessor.deleteChunk(threshold, CHUNK_SIZE);
+
+			if (deletedCount == 0) {
+				break;
+			}
+
+			totalDeleted += deletedCount;
+
+			if (deletedCount < CHUNK_SIZE) {
+				break;
+			}
+		}
+
+		if (totalDeleted > 0) {
+			log.info("처리 완료된 7일 경과 Inbox 내역 삭제: {}건 삭제됨", totalDeleted);
+		}
 	}
 }

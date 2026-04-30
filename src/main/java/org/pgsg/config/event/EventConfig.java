@@ -1,7 +1,6 @@
 package org.pgsg.config.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.pgsg.common.domain.InboxRepository;
 import org.pgsg.common.domain.OutboxRepository;
 import org.pgsg.common.event.Events;
@@ -9,6 +8,7 @@ import org.pgsg.common.event.OutboxEventListener;
 import org.pgsg.common.event.OutboxService;
 import org.pgsg.common.event.scheduler.OutboxRelayScheduler;
 import org.pgsg.common.messaging.advice.InboxAdvice;
+import org.pgsg.common.messaging.processor.InboxCleanupProcessor;
 import org.pgsg.common.messaging.scheduler.InboxCleanupScheduler;
 import org.pgsg.common.util.MdcTaskDecorator;
 import org.springframework.context.annotation.Bean;
@@ -70,7 +70,12 @@ public class EventConfig implements AsyncConfigurer {
 	}
 
 	@Bean
-	public InboxCleanupScheduler inboxCleanupScheduler(JPAQueryFactory jpaQueryFactory) {
-		return new InboxCleanupScheduler(jpaQueryFactory);
+	public InboxCleanupProcessor inboxCleanupProcessor(InboxRepository inboxRepository) {
+		return new InboxCleanupProcessor(inboxRepository);
+	}
+
+	@Bean
+	public InboxCleanupScheduler inboxCleanupScheduler(InboxCleanupProcessor inboxCleanupProcessor) {
+		return new InboxCleanupScheduler(inboxCleanupProcessor);
 	}
 }
