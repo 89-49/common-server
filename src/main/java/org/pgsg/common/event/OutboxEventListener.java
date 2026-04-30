@@ -59,22 +59,32 @@ public class OutboxEventListener {
 
 					UUID targetId=outbox.getId();
 
-					ProducerRecord<String, Object> record = new ProducerRecord<>(
-						outbox.getEventType(),
-						outbox.getDomainId(),
-						outbox.getPayload()
-					);
+					if(outboxService.claimForSending(targetId)){
+						try {
+							ProducerRecord<String, Object> record = new ProducerRecord<>(
+								outbox.getEventType(),
+								outbox.getDomainId(),
+								outbox.getPayload()
+							);
 
-					record.headers().add("message_id", targetId.toString().getBytes());
-					record.headers().add("correlation_id", outbox.getCorrelationId().toString().getBytes());	//흐름 추적용
+							record.headers().add("message_id", targetId.toString().getBytes());
+							record.headers()
+								.add("correlation_id", outbox.getCorrelationId().toString().getBytes());    //흐름 추적용
 
-					kafkaTemplate.send(record)
-						.whenComplete((result, e) -> {
-							if (e == null)
-								outboxService.handleSuccess(targetId);
-							else
-								outboxService.handleFailure(targetId, e);
-						});
+							kafkaTemplate.send(record)
+								.whenComplete((result, e) -> {
+									if (e == null)
+										outboxService.handleSuccess(targetId);
+									else
+										outboxService.handleFailure(targetId, e);
+								});
+						}catch (Exception e) {	//전송 준비 단계 예외 발생 시
+							outboxService.handleFailure(targetId, e);
+							log.error("이벤트 즉시 발행 중 예외 발생: {}", targetId, e);
+						}
+					}else{	//점유 실패 시 스케줄러 등 다른 프로세스가 처리 중인 것으로 간주하고 스킵
+						log.debug("이미 처리 중이거나 점유된 메시지입니다. 발행을 건너뜁니다: {}", targetId);
+					}
 
 				}
 			}

@@ -25,7 +25,7 @@ public class InboxCleanupScheduler {
 			.delete(QInbox.inbox)
 			.where(
 				QInbox.inbox.status.eq(InboxStatus.PROCESSED),
-				QInbox.inbox.receivedAt.before(LocalDateTime.now().minusWeeks(1L)	//todo: 시간 측정 기준을 위해 처리일도 추가할지 검토
+				QInbox.inbox.processedAt.before(LocalDateTime.now().minusWeeks(1L)
 				))
 			.execute();
 
