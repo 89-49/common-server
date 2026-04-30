@@ -3,6 +3,7 @@ package org.pgsg.common.event;
 import java.util.UUID;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.pgsg.common.alert.AlertNotifier;
 import org.pgsg.common.domain.BaseEvent;
 import org.pgsg.common.domain.Outbox;
 import org.pgsg.common.domain.OutboxRepository;
@@ -27,6 +28,7 @@ public class OutboxService {
 
 	private final OutboxRepository outboxRepository;
 	private final KafkaTemplate<String, Object> kafkaTemplate;
+	private final AlertNotifier alertNotifier;
 
 	@Lazy
 	private final OutboxService self;
@@ -76,10 +78,12 @@ public class OutboxService {
 					log.info("DLT 전송 및 상태 변경 완료: {}", targetId);
 				} else {
 					log.error("DLT 전송 실패 (상태 유지): {}", targetId, ex);
+					alertNotifier.notifyDltFailure(targetId, outbox.getEventType(), ex);
 				}
 			});
 		} catch (Exception e) {
 			log.error("DLT 전송 중 예외 발생: {}", targetId, e);
+			alertNotifier.notifyDltFailure(targetId, outbox.getEventType(), e);
 		}
 	}
 
