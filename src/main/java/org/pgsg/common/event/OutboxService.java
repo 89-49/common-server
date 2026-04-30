@@ -1,5 +1,6 @@
 package org.pgsg.common.event;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -59,7 +60,7 @@ public class OutboxService {
 
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public boolean claimForSending(UUID id) {
-		int updatedRows = outboxRepository.updateStatusIfReady(id, OutboxStatus.SENDING);
+		int updatedRows = outboxRepository.updateStatusIfReady(id, OutboxStatus.SENDING, LocalDateTime.now());
 		return updatedRows > 0;
 	}
 

@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -50,6 +51,10 @@ public class Outbox extends BaseEntity{
 
 	@Builder.Default
 	protected int retryCount = 0;
+
+	// SENDING 상태로 점유한 시각
+	@Column
+	protected LocalDateTime claimedAt;
 
 	public void complete() {
 		this.status = OutboxStatus.PROCESSED;
