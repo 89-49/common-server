@@ -3,9 +3,11 @@ package org.pgsg.common.event;
 import java.util.UUID;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.pgsg.common.domain.BaseEvent;
 import org.pgsg.common.domain.Outbox;
 import org.pgsg.common.domain.OutboxRepository;
 import org.pgsg.common.domain.OutboxStatus;
+import org.pgsg.common.util.JsonUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -42,12 +44,15 @@ public class OutboxService {
 	public void handleFailure(UUID id, Throwable e) {
 		outboxRepository.findById(id).ifPresent(outbox -> {
 			outbox.fail();
-			outboxRepository.saveAndFlush(outbox); // 횟수와 FAILED 상태 즉시 반영
 
 			if (outbox.getRetryCount() >= MAX_RETRY_COUNT) {
 				log.error("최대 재시도 횟수 초과(Total: {}). DLT로 격리합니다: {}", outbox.getRetryCount(), id);
+				outbox.permanent_fail();
+				outboxRepository.saveAndFlush(outbox);
 				self.sendToDlt(id);
 			} else {
+				outbox.backToReady();
+				outboxRepository.saveAndFlush(outbox);
 				log.warn("메세지 전송 실패 (재시도 예정 {}/{}): {}", outbox.getRetryCount(), MAX_RETRY_COUNT, id);
 			}
 		});
@@ -68,7 +73,7 @@ public class OutboxService {
 			String dltTopic = outbox.getEventType() + ".dlt";
 			ProducerRecord<String, Object> record = new ProducerRecord<>(
 				dltTopic,
-				outbox.getDomainId(),
+				outbox.getDomainId().toString(),
 				outbox.getPayload()
 			);
 
@@ -76,14 +81,51 @@ public class OutboxService {
 			record.headers().add("correlation_id", outbox.getCorrelationId().toString().getBytes());
 			record.headers().add("error_reason", "MAX_RETRY_EXCEEDED".getBytes());
 
-			kafkaTemplate.send(record);
-			log.info("DLT 전송 시도 완료: {}", targetId);
+			kafkaTemplate.send(record).whenComplete((result, ex)-> {
+				if(ex==null){
+					self.finalizePermanentFailure(targetId);
+					log.info("DLT 전송 및 상태 변경 완료: {}", targetId);
+				}else{
+					log.error("DLT 전송 실패 (상태 유지): {}", targetId, ex);
+				}
+			});
 		} catch (Exception e) {
 			log.error("DLT 전송 중 예외 발생: {}", targetId, e);
-		} finally {
-			// 최종 실패 상태로 변경하여 스케줄러 대상에서 제외
+		}
+	}
+
+	@Transactional
+	public Outbox saveEvent(BaseEvent event) {
+		String eventType = event.getClass().getSimpleName();	//todo: 확인 후 필요 시 수정
+		UUID domainId = event.domainId(); // 도메인 ID 추출 헬퍼 (별도 구현 필요)
+		UUID correlationId = event.correlationId(); // 흐름 추적 ID 추출
+
+		// 2. Outbox 엔티티 생성 (PENDING 상태로 시작)
+		try {
+			String jsonPayload = JsonUtil.toJson(event.payload());
+
+			Outbox outbox = Outbox.builder()
+				.eventType(eventType)
+				.domainId(domainId)
+				.correlationId(correlationId)
+				.payload(jsonPayload)
+				.status(OutboxStatus.PENDING)
+				.retryCount(0)
+				.build();
+
+			log.info("Outbox 이벤트 저장 완료 - ID: {}, Type: {}", outbox.getId(), eventType);
+			return outboxRepository.save(outbox);
+		} catch (Exception e) {
+			log.error("Output payload 직렬화 실패: {}", event.correlationId(), e);
+			throw new RuntimeException("이벤트 직렬화 실패로 인한 Outbox 등록 중단", e);
+		}
+	}
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void finalizePermanentFailure(UUID id) {
+		outboxRepository.findById(id).ifPresent(outbox -> {
 			outbox.permanent_fail();
 			outboxRepository.saveAndFlush(outbox);
-		}
+		});
 	}
 }
