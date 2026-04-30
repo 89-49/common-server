@@ -283,3 +283,88 @@ public void handleOrder(@Payload OrderCreatedEvent event, @Header("message_id") 
 ```
 - 테스트 전 초기 버전으로 수정이 될 수 있습니다. 
 - (사용 중 변경 사항 및 트러블 슈팅은 발생 시 작성하겠습니다!)
+
+
+
+# JWT
+## 1. 환경 설정 (JwtProperties)
+JWT 기능을 사용하려면 `application.yml`에 설정을 추가해야 합니다. 이 설정값은 `JwtProperties` 클래스를 통해 JWT 기능에서 사용됩니다.
+
+```yaml
+jwt:
+  secret: "${JWT_SECRET_KEY:your-secret-key-at-least-32-chars-long}"
+  access-token-expiration: 3600000 # 1시간 (ms)
+  refresh-token-expiration: 604800000 # 7일 (ms)
+```
+
+필요 시 `JwtProperties`를 직접 주입받아 설정된 만료 시간 등의 값을 참조할 수 있습니다.
+```java
+@Autowired
+private JwtProperties jwtProperties;
+
+Long expiration = jwtProperties.getAccessTokenExpiration();
+```
+
+## 2. TokenProvider 사용법
+
+`TokenProvider` 인터페이스(구현체: `JwtTokenProvider`)를 주입받아 토큰 생성 및 검증을 수행합니다.
+
+### 토큰 쌍 생성 (Access & Refresh)
+
+```java
+@Autowired
+private TokenProvider tokenProvider;
+
+// UserDetailsImpl 객체를 바탕으로 TokenPair 생성
+TokenPair tokenPair = tokenProvider.createTokenPair(userDetails);
+
+String accessToken = tokenPair.getAccessToken();   // "Bearer " 접두사 포함
+String refreshToken = tokenPair.getRefreshToken();
+Long expires = tokenPair.getAccessTokenExpiresIn();
+```
+
+### 토큰 검증 및 정보 추출
+
+* 정보 추출 기능(parseClaims() 메서드)의 경우, 해당 기능을 사용할 서비스의 build.gradle에 jjwt-api 의존성을 추가해야 사용 가능
+
+```
+implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+```
+
+```java
+// 유효성 검사 (만료, 서명 등)
+boolean isValid = tokenProvider.validateToken(token);
+
+// 사용자 식별값(UUID) 추출
+UUID userId = tokenProvider.getUserId(token);
+
+// 남은 유효 시간 확인 (ms)
+long remainingTime = tokenProvider.getRemainingTime(token);
+
+// 토큰 파싱 (Claims 추출)
+// 토큰 내부의 전체 클레임을 추출하여 상세 정보에 접근할 수 있습니다.
+Claims claims = tokenProvider.parseClaims(token);
+String role = claims.get(JwtUtils.CLAIM_USER_ROLE, String.class);
+String nickname = claims.get(JwtUtils.CLAIM_NICKNAME, String.class);
+```
+
+### 만료된 토큰 처리 (재발급 시)
+```java
+// 만료된 Access Token에서도 Subject(UUID)를 추출할 수 있습니다.
+String userIdStr = tokenProvider.getSubjectFromExpiredAccessToken(expiredAccessToken);
+```
+
+## 3. JwtUtils 및 상수 활용
+`JwtUtils`는 토큰 파싱 유틸리티와 게이트웨이 연동을 위한 상수를 제공합니다.
+
+- **토큰 추출**: `JwtUtils.resolveToken(header)` (Bearer 접두사 제거)
+- **표준 헤더 상수**: 게이트웨이에서 전달하는 사용자 정보 헤더 키
+    - `JwtUtils.HEADER_USER_ID`: "X-User-Id"
+    - `JwtUtils.HEADER_USERNAME`: "X-User-Username"
+    - `JwtUtils.HEADER_ROLES`: "X-User-Roles"
+    - `JwtUtils.HEADER_USER_NAME`: "X-User-Name"
+    - `JwtUtils.HEADER_USER_NICKNAME`: "X-User-Nickname"
+
+
+
+
