@@ -100,25 +100,29 @@ public class OutboxService {
 		UUID domainId = event.domainId(); // 도메인 ID 추출 헬퍼 (별도 구현 필요)
 		UUID correlationId = event.correlationId(); // 흐름 추적 ID 추출
 
+		String domainType = (event instanceof OutboxEvent oe) ? oe.domainType() : "DEFAULT";	//todo: 확인 필요
+
+		String jsonPayload;
 		// 2. Outbox 엔티티 생성 (PENDING 상태로 시작)
 		try {
-			String jsonPayload = JsonUtil.toJson(event.payload());
-
-			Outbox outbox = Outbox.builder()
-				.eventType(eventType)
-				.domainId(domainId)
-				.correlationId(correlationId)
-				.payload(jsonPayload)
-				.status(OutboxStatus.PENDING)
-				.retryCount(0)
-				.build();
-
-			log.info("Outbox 이벤트 저장 완료 - ID: {}, Type: {}", outbox.getId(), eventType);
-			return outboxRepository.save(outbox);
-		} catch (Exception e) {
+			jsonPayload = JsonUtil.toJson(event.payload());
+		}catch (Exception e) {
 			log.error("Output payload 직렬화 실패: {}", event.correlationId(), e);
 			throw new RuntimeException("이벤트 직렬화 실패로 인한 Outbox 등록 중단", e);
 		}
+		Outbox outbox = Outbox.builder()
+			.eventType(eventType)
+			.domainType(domainType)
+			.domainId(domainId)
+			.correlationId(correlationId)
+			.payload(jsonPayload)
+			.status(OutboxStatus.PENDING)
+			.retryCount(0)
+			.build();
+
+		log.info("Outbox 이벤트 저장 완료 - ID: {}, Type: {}", outbox.getId(), eventType);
+
+		return outboxRepository.save(outbox);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
