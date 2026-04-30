@@ -12,30 +12,36 @@ import java.util.UUID;
 @Builder
 @Access(AccessType.FIELD)
 @Table(name = "p_outbox", indexes = {
-	@Index(name = "idx_outbox_status", columnList = "status")})	//status를 기준으로 index 생성
+		@Index(name = "idx_outbox_status", columnList = "status"),
+		@Index(name = "idx_outbox_correlation_id", columnList = "correlationId")})    //status, correlationId 기준 index 생성
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Outbox extends BaseEntity{
+
+	public static final int MAX_RETRY_COUNT = 3;
+	private static final String DLT_TOPIC_SUFFIX = "-dlt";
+
 	@Id
 	@JdbcTypeCode(SqlTypes.UUID)
 	@Column(name="message_id")
 	@GeneratedValue(strategy = GenerationType.UUID)
 	protected UUID id;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	protected UUID correlationId; // 거래나 예약 등에 관여한 서비스 이벤트들을 하나로 연결
 
 	@Column(nullable = false)
 	protected String domainType;
 
+	// TODO: kafka의 파티션 키 후보로 domainId를 활용할 수 있을지 검토 필요
 	@Column(nullable = false)
-	protected UUID domainId;	//todo: kafka의 파티션 키 후보로 생각중
+	protected UUID domainId;
 
 	@Column(nullable = false)
-	protected String eventType; // 이벤트 타입, 카프카를 쓰게되면 Topic이 될 것
+	protected String eventType; // topic name
 
 	@JdbcTypeCode(SqlTypes.JSON)
-	protected String payload; // 전송한 메세지(JSON 형식)
+	protected String payload;
 
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
@@ -43,24 +49,30 @@ public class Outbox extends BaseEntity{
 	protected OutboxStatus status = OutboxStatus.PENDING;
 
 	@Builder.Default
-	protected int retryCount = 0; // 재시도 카운트
+	protected int retryCount = 0;
 
 	public void complete() {
 		this.status = OutboxStatus.PROCESSED;
 	}
 
 	public void fail() {
-		if(retryCount>3)	//재시도 횟수 3회로 설정
+		this.retryCount++;
+		if (this.retryCount >= MAX_RETRY_COUNT) {
 			this.status = OutboxStatus.FAILED;
-		else
-			this.retryCount++;
+		} else {
+			this.status = OutboxStatus.PENDING;
+		}
 	}
-	public void permanent_fail() {
+
+	public void permanentFail() {
 		this.status = OutboxStatus.PERMANENT_FAILURE;
 	}
 
-	public void backToReady(){
-		this.status=OutboxStatus.PENDING;
+	public boolean isFailed() {
+		return this.status == OutboxStatus.FAILED;
 	}
 
+	public String getDltTopic() {
+		return this.eventType + DLT_TOPIC_SUFFIX;
+	}
 }
