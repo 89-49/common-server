@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Events {
 	private static KafkaTemplate<String, Object> kafkaTemplate;
 	private static ApplicationEventPublisher eventPublisher;
@@ -17,9 +19,13 @@ public class Events {
 		Events.eventPublisher = eventPublisher;
 	}
 
-	public static void trigger(UUID correlationId, String domainType, String domainId, String eventType, Object payload) {
-		if (kafkaTemplate != null && eventPublisher != null) {
-			eventPublisher.publishEvent(new OutboxEvent(correlationId, domainType, domainId, eventType, payload));
+	public static void trigger(Object event) {
+		if (kafkaTemplate == null && eventPublisher == null) {
+			String errorMsg = "Events class has not been initialized. Call Events.init(ApplicationEventPublisher, KafkaTemplate) during application startup.";
+			log.error(errorMsg);
+			throw new IllegalStateException(errorMsg);
 		}
+
+		eventPublisher.publishEvent(event);
 	}
 }
