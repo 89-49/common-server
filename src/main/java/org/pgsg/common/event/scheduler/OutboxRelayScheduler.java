@@ -43,7 +43,7 @@ public class OutboxRelayScheduler {
 				try {
 					ProducerRecord<String, Object> record = new ProducerRecord<>(
 						outbox.getEventType(),
-						outbox.getDomainId(),
+						outbox.getDomainId().toString(),
 						outbox.getPayload()
 					);
 
