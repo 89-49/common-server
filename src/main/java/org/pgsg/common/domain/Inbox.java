@@ -53,7 +53,6 @@ public class Inbox {
 
 	public void complete() {
 		this.status = InboxStatus.PROCESSED;
-		this.receivedAt = LocalDateTime.now();
 	}
 
 	public void fail() {

@@ -1,14 +1,14 @@
 package org.pgsg.common.event;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.pgsg.common.domain.Outbox;
 import org.pgsg.common.domain.OutboxRepository;
 import org.pgsg.common.domain.OutboxStatus;
-import org.pgsg.common.domain.QOutbox;
-import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -26,15 +26,8 @@ public class OutboxEventListener {
 	private final ObjectMapper objectMapper;
 	private final OutboxService outboxService;
 
-	@EventListener
-	@Transactional(propagation = Propagation.REQUIRED)
+	@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
 	public void recordOutbox(OutboxEvent event) {
-
-		if (outboxRepository.exists(QOutbox.outbox.correlationId.eq(event.correlationId()))) {
-			log.warn("이미 존재하는 correlationId 입니다.: {}", event.correlationId());
-			return;
-		}
-
 		try {
 			String jsonPayload = objectMapper.writeValueAsString(event.payload());
 
@@ -44,32 +37,47 @@ public class OutboxEventListener {
 				.domainId(event.domainId())
 				.eventType(event.eventType())
 				.payload(jsonPayload)
-				.status(OutboxStatus.PENDING) // 메세지 전송전 단계는 PENDING, 전송 완료 후는 PROCESSED호 변경됨
+				.status(OutboxStatus.PENDING) // 메세지 전송전 단계는 PENDING, 전송 완료 후는 PROCESSED로 변경됨
 				.build();
-			outboxRepository.save(outbox);
+
+			outboxRepository.saveAndFlush(outbox);
+		} catch (DataIntegrityViolationException e) {
+			log.warn("이미 처리 중인 중복 Outbox 이벤트입니다. correlationId: {}", event.correlationId());
 		} catch (JsonProcessingException e) {
 			log.error("Output payload 직렬화 실패: {}", event.correlationId(), e);
+			throw new RuntimeException("이벤트 직렬화 실패로 인한 Outbox 등록 중단", e);
 		}
 	}
 
 	// fallbackExecution = true, @Transactional이 없는 환경(단순 메시지 전송)에서도 실행 보장
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
 	public void publish(OutboxEvent event) {
-		outboxRepository.findByCorrelationId(event.correlationId()).ifPresent(outbox -> {
-			// Kafka 메시지에 ID 헤더 추가
-			ProducerRecord<String, Object> record = new ProducerRecord<>(
-				outbox.getEventType(),
-				outbox.getDomainId(),
-				outbox.getPayload()
-			);
-			record.headers().add("message_id", outbox.getId().toString().getBytes());
+		List<Outbox> outboxes=outboxRepository.findAllByCorrelationId(event.correlationId());
 
-			kafkaTemplate.send(record)
-				.whenComplete((result, e) -> {
-					if (e == null) outboxService.handleSuccess(event.correlationId());
-					else outboxService.handleFailure(event, e);
-				});
-		});
+			for(Outbox outbox:outboxes){
+				if(outbox.getStatus().equals(OutboxStatus.PENDING)){
+
+					UUID targetId=outbox.getId();
+
+					ProducerRecord<String, Object> record = new ProducerRecord<>(
+						outbox.getEventType(),
+						outbox.getDomainId(),
+						outbox.getPayload()
+					);
+
+					record.headers().add("message_id", targetId.toString().getBytes());
+					record.headers().add("correlation_id", outbox.getCorrelationId().toString().getBytes());	//흐름 추적용
+
+					kafkaTemplate.send(record)
+						.whenComplete((result, e) -> {
+							if (e == null)
+								outboxService.handleSuccess(targetId);
+							else
+								outboxService.handleFailure(targetId, e);
+						});
+
+				}
+			}
 	}
 
 
