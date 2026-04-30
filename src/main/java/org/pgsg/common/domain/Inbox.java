@@ -13,6 +13,8 @@ import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
@@ -27,33 +29,33 @@ import lombok.NoArgsConstructor;
 @Builder
 @Access(AccessType.FIELD)
 @Table(name = "p_inbox", indexes = {
-	@Index(name = "idx_inbox_message_group", columnList = "messageGroup"),	//메시지 그룹으로 인덱스 생성
-	@Index(name = "idx_inbox_processed_at", columnList = "receivedAt")		//처리일로 인덱스 생성
+		@Index(name = "idx_inbox_message_group", columnList = "messageGroup"),
+		@Index(name = "idx_inbox_processed_at", columnList = "processedAt")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 public class Inbox {
+
 	@Id
 	@JdbcTypeCode(SqlTypes.UUID)
-	@Column(name="message_id")
-	protected UUID id; // Outbox에 등록된 메세지 ID와 동일하게 유지
+	@Column(name = "message_id")
+	protected UUID id; 				// Outbox에 등록된 메세지 ID와 동일하게 유지
 
-	@Column
-	protected String messageGroup;	//co
+	@Column(nullable = false)
+	protected String messageGroup; 	// co
 
 	@Builder.Default
-	@Column
-	protected InboxStatus status=InboxStatus.RECEIVED;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	protected InboxStatus status = InboxStatus.RECEIVED;
 
 	@CreatedDate
-	@Column(updatable=false)
+	@Column(updatable = false)
 	protected LocalDateTime receivedAt;
 
-	@Column(updatable=false)
+	@Column
 	protected LocalDateTime processedAt;
-
-
 
 	public void complete() {
 		this.status = InboxStatus.PROCESSED;
