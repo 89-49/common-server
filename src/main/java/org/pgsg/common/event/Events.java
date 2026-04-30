@@ -1,31 +1,29 @@
 package org.pgsg.common.event;
 
-import java.util.UUID;
+import java.util.Objects;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Events {
-	private static KafkaTemplate<String, Object> kafkaTemplate;
+@Component
+public class Events implements ApplicationContextAware {
+
 	private static ApplicationEventPublisher eventPublisher;
 
-	@Autowired
-	public void init(KafkaTemplate<String, Object> kafkaTemplate, ApplicationEventPublisher eventPublisher) {
-		Events.kafkaTemplate = kafkaTemplate;
-		Events.eventPublisher = eventPublisher;
+	@Override
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+		Events.eventPublisher = applicationContext;
 	}
 
 	public static void trigger(Object event) {
-		if (kafkaTemplate == null || eventPublisher == null) {
-			String errorMsg = "Events class has not been initialized. Call Events.init(ApplicationEventPublisher, KafkaTemplate) during application startup.";
-			log.error(errorMsg);
-			throw new IllegalStateException(errorMsg);
-		}
-
+		Objects.requireNonNull(eventPublisher, "Events가 초기화되지 않았습니다");
 		eventPublisher.publishEvent(event);
 	}
 }
