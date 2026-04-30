@@ -20,7 +20,7 @@ public class Events {
 	}
 
 	public static void trigger(Object event) {
-		if (kafkaTemplate == null && eventPublisher == null) {
+		if (kafkaTemplate == null || eventPublisher == null) {
 			String errorMsg = "Events class has not been initialized. Call Events.init(ApplicationEventPublisher, KafkaTemplate) during application startup.";
 			log.error(errorMsg);
 			throw new IllegalStateException(errorMsg);

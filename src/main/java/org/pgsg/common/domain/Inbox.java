@@ -50,9 +50,14 @@ public class Inbox {
 	@Column(updatable=false)
 	protected LocalDateTime receivedAt;
 
+	@Column(updatable=false)
+	protected LocalDateTime processedAt;
+
+
 
 	public void complete() {
 		this.status = InboxStatus.PROCESSED;
+		this.processedAt = LocalDateTime.now();
 	}
 
 	public void fail() {

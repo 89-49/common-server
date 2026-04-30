@@ -28,11 +28,11 @@ public class OutboxService {
 	@Lazy
 	private final OutboxService self;
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void handleSuccess(UUID correlationId) {
-		outboxRepository.findByCorrelationId(correlationId).ifPresent(outbox -> {
+	public void handleSuccess(UUID id) {
+		outboxRepository.findById(id).ifPresent(outbox -> {
 			outbox.complete();
 			outboxRepository.save(outbox);
-			log.info("Outbox 메세지 전송 및 상태 완료 변경 성공: {}", correlationId);
+			log.info("Outbox 메세지 전송 및 상태 완료 변경 성공: {}", id);
 		});
 
 	}
