@@ -29,7 +29,7 @@ public class Outbox extends BaseEntity{
 	protected String domainType;
 
 	@Column(nullable = false)
-	protected String domainId;	//todo: kafka의 파티션 키 후보로 생각중
+	protected UUID domainId;	//todo: kafka의 파티션 키 후보로 생각중
 
 	@Column(nullable = false)
 	protected String eventType; // 이벤트 타입, 카프카를 쓰게되면 Topic이 될 것
@@ -57,6 +57,10 @@ public class Outbox extends BaseEntity{
 	}
 	public void permanent_fail() {
 		this.status = OutboxStatus.PERMANENT_FAILURE;
+	}
+
+	public void backToReady(){
+		this.status=OutboxStatus.PENDING;
 	}
 
 }

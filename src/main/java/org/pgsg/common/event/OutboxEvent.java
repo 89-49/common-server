@@ -3,13 +3,15 @@ package org.pgsg.common.event;
 import java.util.Objects;
 import java.util.UUID;
 
-public record OutboxEvent(
+import org.pgsg.common.domain.BaseEvent;
+
+public record OutboxEvent (
 	UUID correlationId,
 	String domainType,
-	String domainId,
+	UUID domainId,
 	String eventType,
 	Object payload
-) {
+) implements BaseEvent{
 	public OutboxEvent {
 				Objects.requireNonNull(correlationId, "correlationId must not be null");
 				Objects.requireNonNull(domainType, "domainType must not be null");
