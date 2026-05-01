@@ -96,10 +96,10 @@ public class OutboxService {
 
 	@Transactional
 	public Outbox saveEvent(BaseEvent event) {
-		UUID domainId = event.domainId(); // 도메인 ID 추출
-		String domainType = event.domainType();
-		String eventType = event.eventType();
-		UUID correlationId = event.correlationId(); // 흐름 추적 ID 추출
+		UUID domainId = Objects.requireNonNull(event.domainId()); // 도메인 ID 추출
+		String domainType = Objects.requireNonNull(event.domainType());
+		String eventType = Objects.requireNonNull(event.eventType());
+		UUID correlationId = Objects.requireNonNull(event.correlationId()); // 흐름 추적 ID 추출
 
 		String jsonPayload;
 		// 2. Outbox 엔티티 생성 (PENDING 상태로 시작)
