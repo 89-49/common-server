@@ -23,6 +23,8 @@ import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecu
 
 import java.util.concurrent.Executor;
 
+import jakarta.persistence.EntityManager;
+
 @EnableAsync
 @Configuration
 @EnableScheduling
@@ -72,5 +74,10 @@ public class EventConfig implements AsyncConfigurer {
 	@Bean
 	public InboxCleanupScheduler inboxCleanupScheduler(JPAQueryFactory jpaQueryFactory) {
 		return new InboxCleanupScheduler(jpaQueryFactory);
+	}
+
+	@Bean
+	public JPAQueryFactory jpaQueryFactory(EntityManager entityManager) {
+		return new JPAQueryFactory(entityManager);
 	}
 }

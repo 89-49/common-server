@@ -29,7 +29,8 @@ public class OutboxService {
 	private static final int MAX_RETRY_COUNT = 3; // 재시도 최대 횟수
 
 	@Lazy
-	private final OutboxService self;
+	private OutboxService self;
+
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleSuccess(UUID id) {
 		outboxRepository.findById(id).ifPresent(outbox -> {
