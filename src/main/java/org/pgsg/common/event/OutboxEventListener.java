@@ -1,5 +1,6 @@
 package org.pgsg.common.event;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,10 +11,10 @@ import org.pgsg.common.domain.OutboxRepository;
 import org.pgsg.common.domain.OutboxStatus;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class OutboxEventListener {
 		try {
 			outboxService.saveEvent(event);
 		} catch (DataIntegrityViolationException e) {
-			if(isUniqueConstraintViolation(e,"uk_outbox_correlation_id"))
+			if(isUniqueConstraintViolation(e,"uk_outbox_correlation_id_type"))
 				log.warn("이미 처리 중인 중복 Outbox 이벤트입니다. correlationId: {}", event.correlationId());
 			else
 				throw e;

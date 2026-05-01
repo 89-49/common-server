@@ -7,8 +7,8 @@ import org.pgsg.common.domain.BaseEvent;
 
 public record OutboxEvent (
 	UUID correlationId,
-	String domainType,
 	UUID domainId,
+	String domainType,
 	String eventType,
 	Object payload
 ) implements BaseEvent{

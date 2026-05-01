@@ -11,8 +11,11 @@ import java.util.UUID;
 @Getter
 @Builder
 @Access(AccessType.FIELD)
-@Table(name = "p_outbox", indexes = {
-	@Index(name = "idx_outbox_status", columnList = "status")})	//status를 기준으로 index 생성
+@Table(name = "p_outbox",
+	indexes = {
+	@Index(name = "idx_outbox_status", columnList = "status")}	//status를 기준으로 index 생성
+	,uniqueConstraints = {
+	@UniqueConstraint(name="uk_outbox_correlation_id_type", columnNames = {"correlationId", "eventType"})})	//멱등성 보장을 위해 correlationId와 eventType으로 복합키 생성
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Outbox extends BaseEntity{
@@ -22,17 +25,17 @@ public class Outbox extends BaseEntity{
 	@GeneratedValue(strategy = GenerationType.UUID)
 	protected UUID id;
 
-	@Column(nullable = false, unique = true)
-	protected UUID correlationId; // 거래나 예약 등에 관여한 서비스 이벤트들을 하나로 연결
+	@Column(nullable = false)
+	protected UUID correlationId; // 거래나 예약 등에 관여한 서비스 이벤트들을 하나로 연결 - 현재는 상품 id를 사용하는 것으로 생각중
 
 	@Column(nullable = false)
-	protected String domainType;
+	protected String domainType;	//도메인명 - product, trade 등
 
 	@Column(nullable = false)
 	protected UUID domainId;	//todo: kafka의 파티션 키 후보로 생각중
 
 	@Column(nullable = false)
-	protected String eventType; // 이벤트 타입, 카프카를 쓰게되면 Topic이 될 것
+	protected String eventType; // 토픽명은 configs 참조 - ex) prod-trade-created
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	protected String payload; // 전송한 메세지(JSON 형식)
