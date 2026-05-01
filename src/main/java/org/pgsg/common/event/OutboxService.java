@@ -1,6 +1,7 @@
 package org.pgsg.common.event;
 
 import java.util.UUID;
+import java.util.Objects;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.pgsg.common.domain.BaseEvent;
@@ -96,11 +97,10 @@ public class OutboxService {
 
 	@Transactional
 	public Outbox saveEvent(BaseEvent event) {
-		String eventType = event.getClass().getSimpleName();	//todo: 확인 후 필요 시 수정
-		UUID domainId = event.domainId(); // 도메인 ID 추출 헬퍼 (별도 구현 필요)
-		UUID correlationId = event.correlationId(); // 흐름 추적 ID 추출
-
-		String domainType = (event instanceof OutboxEvent oe) ? oe.domainType() : "DEFAULT";	//todo: 확인 필요
+		UUID domainId = Objects.requireNonNull(event.domainId()); // 도메인 ID 추출
+		String domainType = Objects.requireNonNull(event.domainType());
+		String eventType = Objects.requireNonNull(event.eventType());
+		UUID correlationId = Objects.requireNonNull(event.correlationId()); // 흐름 추적 ID 추출
 
 		String jsonPayload;
 		// 2. Outbox 엔티티 생성 (PENDING 상태로 시작)

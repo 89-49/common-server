@@ -34,7 +34,7 @@ public class OutboxEventListener {
 		try {
 			outboxService.saveEvent(event);
 		} catch (DataIntegrityViolationException e) {
-			if(isUniqueConstraintViolation(e,"uk_outbox_correlation_id"))
+			if(isUniqueConstraintViolation(e,"uk_outbox_correlation_id_type"))
 				log.warn("이미 처리 중인 중복 Outbox 이벤트입니다. correlationId: {}", event.correlationId());
 			else
 				throw e;
