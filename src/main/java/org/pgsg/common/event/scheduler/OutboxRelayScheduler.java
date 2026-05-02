@@ -1,6 +1,6 @@
 package org.pgsg.common.event.scheduler;
 
-import static org.pgsg.common.event.OutboxService.*;
+import static org.pgsg.common.event.OutboxService.MAX_RETRY_COUNT;;
 
 import java.util.List;
 import java.util.UUID;
