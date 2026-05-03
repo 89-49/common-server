@@ -76,4 +76,12 @@ public class EventConfig implements AsyncConfigurer {
 	public InboxCleanupScheduler inboxCleanupScheduler(JPAQueryFactory jpaQueryFactory) {
 		return new InboxCleanupScheduler(jpaQueryFactory);
 	}
+
+	@Bean
+	public OutboxService outboxService(
+		OutboxRepository outboxRepository,
+		KafkaTemplate<String, Object> kafkaTemplate
+	) {
+		return new OutboxService(outboxRepository, kafkaTemplate);
+	}
 }

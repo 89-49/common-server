@@ -1,7 +1,7 @@
 package org.pgsg.common.event;
 
-import java.util.UUID;
 import java.util.Objects;
+import java.util.UUID;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.pgsg.common.domain.BaseEvent;
@@ -12,7 +12,6 @@ import org.pgsg.common.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class OutboxService {
 	private final OutboxRepository outboxRepository;
