@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'org.pgsg'
-version = '0.2.10-SNAPSHOT'
+version = '0.3.0-SNAPSHOT'
 description = 'common'
 
 java {
@@ -53,6 +53,10 @@ dependencies {
     api "com.github.danielwegener:logback-kafka-appender:0.2.0-RC2"
     api 'net.logstash.logback:logstash-logback-encoder:7.4'
     api 'com.github.loki4j:loki-logback-appender:1.4.1'
+
+    //모니터링
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'io.micrometer:micrometer-registry-prometheus'
 
 //    // Zipkin
 //    api 'io.micrometer:micrometer-tracing-bridge-brave'

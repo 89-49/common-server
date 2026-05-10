@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<included>
+<configuration>
     <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="UNKNOWN"/>
 
     <property name="CONSOLE_LOG_PATTERN"
@@ -17,19 +17,27 @@
             <includeMdc>true</includeMdc>
             <customFields>{"service_name":"${appName}"}</customFields>
         </encoder>
-
         <topic>pgsg-logs</topic>
         <producerConfig>bootstrap.servers=${BOOTSTRAP_SERVERS:-localhost:9092}</producerConfig>
         <producerConfig>acks=1</producerConfig>
         <producerConfig>linger.ms=1000</producerConfig>
-        <fallbackAppenderRef ref="CONSOLE" />
+        <producerConfig>security.protocol=SSL</producerConfig>
+        <producerConfig>ssl.truststore.location=/app/ssl/kafka.server.truststore.jks</producerConfig>
+        <producerConfig>ssl.truststore.password=${TRUST_STORE_PASSWORD:-}</producerConfig>
+        <producerConfig>ssl.endpoint.identification.algorithm=</producerConfig>
+        <fallbackAppenderRef ref="CONSOLE"/>
     </appender>
 
     <appender name="ASYNC_KAFKA" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="KAFKA" />
+        <appender-ref ref="KAFKA"/>
         <queueSize>512</queueSize>
         <discardingThreshold>0</discardingThreshold>
         <neverBlock>true</neverBlock>
         <maxFlushTime>5000</maxFlushTime>
     </appender>
-</included>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_KAFKA"/>
+    </root>
+</configuration>
