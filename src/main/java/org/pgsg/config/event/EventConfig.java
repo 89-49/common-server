@@ -11,6 +11,7 @@ import org.pgsg.common.event.scheduler.OutboxRelayScheduler;
 import org.pgsg.common.messaging.advice.InboxAdvice;
 import org.pgsg.common.messaging.scheduler.InboxCleanupScheduler;
 import org.pgsg.common.util.MdcTaskDecorator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -73,6 +74,7 @@ public class EventConfig implements AsyncConfigurer {
 	}
 
 	@Bean
+	@ConditionalOnBean(JPAQueryFactory.class)
 	public InboxCleanupScheduler inboxCleanupScheduler(JPAQueryFactory jpaQueryFactory) {
 		return new InboxCleanupScheduler(jpaQueryFactory);
 	}
