@@ -18,7 +18,6 @@ import jakarta.persistence.PersistenceContext;
 @EnableJpaAuditing
 @ConditionalOnClass(name = "jakarta.persistence.Entity")
 @EnableJpaRepositories(basePackages = "org.pgsg")
-@ConditionalOnBean(javax.sql.DataSource.class)
 @EntityScan(basePackages = "org.pgsg")
 public class JPAConfig {
 
