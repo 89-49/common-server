@@ -23,9 +23,8 @@
         <producerConfig>linger.ms=1000</producerConfig>
         <producerConfig>security.protocol=SSL</producerConfig>
         <producerConfig>ssl.truststore.location=/app/ssl/kafka.server.truststore.jks</producerConfig>
-        <producerConfig>ssl.truststore.password=${TRUST_STORE_PASSWORD:-}</producerConfig>
+        <producerConfig>ssl.truststore.password=${TRUST_STORE_PASSWORD}</producerConfig>
         <producerConfig>ssl.endpoint.identification.algorithm=</producerConfig>
-        <fallbackAppenderRef ref="CONSOLE"/>
     </appender>
 
     <appender name="ASYNC_KAFKA" class="ch.qos.logback.classic.AsyncAppender">
