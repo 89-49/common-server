@@ -62,6 +62,7 @@ dependencies {
     api 'io.micrometer:micrometer-tracing-bridge-brave'
     api 'io.zipkin.reporter2:zipkin-reporter-brave'
     api 'io.github.openfeign:feign-micrometer'
+    api 'io.zipkin.reporter2:zipkin-sender-okhttp3'
 
     api 'io.github.openfeign.querydsl:querydsl-jpa:6.8'
     annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.8:jpa'
