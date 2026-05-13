@@ -43,6 +43,7 @@ public class Inbox {
 	protected String messageGroup;	//co
 
 	@Builder.Default
+	@Enumerated(EnumType.STRING)
 	@Column
 	protected InboxStatus status=InboxStatus.RECEIVED;
 
