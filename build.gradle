@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'org.pgsg'
-version = '0.2.6-SNAPSHOT'
+version = '0.3.2-SNAPSHOT'
 description = 'common'
 
 java {
@@ -54,10 +54,15 @@ dependencies {
     api 'net.logstash.logback:logstash-logback-encoder:7.4'
     api 'com.github.loki4j:loki-logback-appender:1.4.1'
 
-//    // Zipkin
-//    api 'io.micrometer:micrometer-tracing-bridge-brave'
-//    api 'io.zipkin.reporter2:zipkin-reporter-brave'
-//    api 'io.github.openfeign:feign-micrometer'
+    //모니터링
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'io.micrometer:micrometer-registry-prometheus'
+
+    // Zipkin
+    api 'io.micrometer:micrometer-tracing-bridge-brave'
+    api 'io.zipkin.reporter2:zipkin-reporter-brave'
+    api 'io.github.openfeign:feign-micrometer'
+    api 'io.zipkin.reporter2:zipkin-sender-okhttp3'
 
     api 'io.github.openfeign.querydsl:querydsl-jpa:6.8'
     annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.8:jpa'

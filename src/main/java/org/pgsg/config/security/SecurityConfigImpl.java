@@ -40,6 +40,7 @@ public class SecurityConfigImpl implements SecurityConfig {
                         // Explicitly permit public endpoints
                         .requestMatchers("/favicon.ico", "/error").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/prometheus", "/actuator/metrics").permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )

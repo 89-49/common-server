@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+<!--    <springProperty scope="context" name="sslTruststoreLocation"-->
+<!--                    source="ssl.truststore.location"-->
+<!--                    defaultValue="/app/ssl/kafka.server.truststore.jks"/>-->
+<!--    <springProperty scope="context" name="trustStorePassword"-->
+<!--                    source="trust.store.password"-->
+<!--                    defaultValue=""/>-->
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="UNKNOWN"/>
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %cyan([${appName}]) %cyan([%X{traceId:-SYSTEM},%X{spanId:-}]) %yellow([%X{method:-} %X{uri:-}]) %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+<!--    <appender name="KAFKA" class="com.github.danielwegener.logback.kafka.KafkaAppender">-->
+<!--        <encoder class="net.logstash.logback.encoder.LogstashEncoder">-->
+<!--            <includeMdc>true</includeMdc>-->
+<!--            <customFields>{"service_name":"${appName}"}</customFields>-->
+<!--        </encoder>-->
+<!--        <topic>pgsg-logs</topic>-->
+<!--        <producerConfig>bootstrap.servers=${BOOTSTRAP_SERVERS:-34.64.35.152:9092,34.22.94.155:9092,34.50.28.59:9092}</producerConfig>-->
+<!--        <producerConfig>acks=1</producerConfig>-->
+<!--        <producerConfig>linger.ms=1000</producerConfig>-->
+<!--        <producerConfig>security.protocol=SSL</producerConfig>-->
+<!--        <producerConfig>ssl.truststore.location=${SSL_TRUSTSTORE_LOCATION:-/app/ssl/kafka.server.truststore.jks}</producerConfig>-->
+<!--        <producerConfig>ssl.truststore.password=${TRUST_STORE_PASSWORD}</producerConfig>-->
+<!--        <producerConfig>ssl.endpoint.identification.algorithm=</producerConfig>-->
+<!--    </appender>-->
+
+<!--    <appender name="ASYNC_KAFKA" class="ch.qos.logback.classic.AsyncAppender">-->
+<!--        <appender-ref ref="KAFKA"/>-->
+<!--        <queueSize>512</queueSize>-->
+<!--        <discardingThreshold>0</discardingThreshold>-->
+<!--        <neverBlock>true</neverBlock>-->
+<!--        <maxFlushTime>5000</maxFlushTime>-->
+<!--    </appender>-->
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/${appName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/${appName}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+<!--        <appender-ref ref="ASYNC_KAFKA"/>-->
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

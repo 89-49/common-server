@@ -14,6 +14,7 @@ import org.pgsg.common.domain.InboxRepository;
 import org.pgsg.common.domain.InboxStatus;
 import org.pgsg.common.messaging.annotation.IdempotentConsumer;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.Message;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +31,27 @@ public class InboxAdvice {
 	@Transactional(rollbackFor = Exception.class)
 	public Object handle(ProceedingJoinPoint joinPoint, IdempotentConsumer idempotentConsumer) throws Throwable {
 		UUID messageId = extractMessageId(joinPoint.getArgs());
+		Acknowledgment acknowledgement = extractAcknowledgment(joinPoint.getArgs());
 
 		if (messageId == null) {
 			log.warn("Message ID가 없는 메시지입니다. 멱등성 체크를 진행하지 않습니다.");
-			return joinPoint.proceed();
+			Object result = joinPoint.proceed();
+
+			if (acknowledgement != null) {
+				acknowledgement.acknowledge();
+			}
+
+			return result;
 		}
 
 		Optional<Inbox> existingInbox = inboxRepository.findById(messageId);
 		if (existingInbox.isPresent() && existingInbox.get().getStatus() == InboxStatus.PROCESSED) {
 			log.info("이미 처리가 완료된 메시지입니다. (ID: {})", messageId);
+
+			if (acknowledgement != null) {
+				acknowledgement.acknowledge();
+			}
+
 			return null;
 		}
 
@@ -55,6 +68,11 @@ public class InboxAdvice {
 
 			} catch (DataIntegrityViolationException e) {
 				log.info("동시 유입된 중복 메시지입니다: (ID: {})", messageId);
+
+				if (acknowledgement != null) {
+					acknowledgement.acknowledge();
+				}
+
 				return null;
 			}
 		}
@@ -67,6 +85,10 @@ public class InboxAdvice {
 			inbox.complete();
 			inboxRepository.save(inbox);
 			log.debug("메시지 처리 완료: {}", messageId);
+
+			if (acknowledgement != null) {
+				acknowledgement.acknowledge();
+			}
 
 			return result;
 		} catch (Throwable throwable) {
@@ -107,5 +129,14 @@ public class InboxAdvice {
 			log.error("메시지 ID 형식이 유효하지 않습니다:{}", value, e);
 			return null;
 		}
+	}
+
+	private Acknowledgment extractAcknowledgment(Object[] args) {
+		for (Object arg : args) {
+			if (arg instanceof Acknowledgment ack) {
+				return ack;
+			}
+		}
+		return null;
 	}
 }
